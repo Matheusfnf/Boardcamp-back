@@ -1,49 +1,26 @@
 import express from "express";
-import pg from "pg";
+import dotenv from "dotenv";
+import categoriesRoutes from "./routes/categoriesRoutes.js";
+import customersRoutes from "./routes/customersRoutes.js";
+import gamesRoutes from "./routes/gamesRoutes.js";
+import rentalRoutes from "./routes/rentalsRoutes.js";
+import cors from "cors";
 
-const { Pool } = pg;
-
-const connection = new Pool({
-  user: "postgres",
-  host: "localhost",
-  port: 5432,
-  database: "exerciciomystore",
-  password: "snowfoda5",
-});
+dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 
-app.get("/api/products", async (req, res) => {
-  const products = await connection.query("SELECT * FROM produtos");
-  res.send(products.rows);
-});
+app.use(categoriesRoutes);
+app.use(customersRoutes);
+app.use(gamesRoutes);
+app.use("/rentals", rentalRoutes);
 
-app.get("/api/products/:id", async (req, res) => {
-  const id = parseInt(req.params.id);
-
-  if (isNaN(id)) {
-    return res.sendStatus(400);
-  }
-
-  const product = await connection.query("SELECT * FROM produtos WHERE id=$1", [
-    id,
-  ]);
-
-  res.status(200).send(product.rows[0]);
-});
-
-app.post("/api/products", async (req, res) => {
-  const { nome, preco, condicao } = req.body;
-
-  await connection.query(
-    "INSERT INTO produtos (nome, preco, condicao) VALUES ($1, $2, $3)",
-    [nome, preco, condicao]
-  );
-
-  res.sendStatus(201);
-});
-
-app.listen(4000, () => {
-  console.log("Server listening on port 4000.");
+app.listen(process.env.PORT, () => {
+  console.log("Running on port " + process.env.PORT);
 });

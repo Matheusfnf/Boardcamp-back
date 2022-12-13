@@ -7,10 +7,9 @@ class Games {
 
     if (name) {
       const response = await connection.query(
-        `SELECT * FROM games WHERE "name" = '${name}'`
+        `SELECT * FROM games WHERE name LIKE '%${name}%'`
       );
-      console.log(response);
-      return res.status(200).json(response);
+      return res.send(response.rows);
     }
 
     try {

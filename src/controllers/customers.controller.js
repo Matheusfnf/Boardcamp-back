@@ -44,11 +44,14 @@ class Customers {
     });
 
     const response = await connection.query(
-      `SELECT * FROM customers WHERE "cpf" = '${cpf}'`
+      `SELECT * FROM customers WHERE cpf = '${cpf}'`
     );
 
-    if (response == true) {
-      return;
+    if (response.rowCount > 0) {
+      return res.status(422).json({
+        statuscode: 422,
+        message: "cpf já existente!",
+      });
     }
 
     if (validation.error) {
@@ -78,8 +81,6 @@ class Customers {
       return res.sendStatus(404);
     }
 
-    if (!id) return res.status(404);
-
     const sendObj = { name, phone, cpf, birthday };
 
     const validation = customerSchema.validate(sendObj, {
@@ -93,7 +94,7 @@ class Customers {
     }
     try {
       const product = await connection.query(
-        "UPDATE customers SET name = $2, phone = $3, cpf = $4, birthday = $5 WHERE id=$1",
+        `UPDATE customers SET "name" = $2, "phone" = $3, "cpf" = $4, "birthday" = $5 WHERE id=$1`,
         [id, name, phone, cpf, birthday]
       );
 
